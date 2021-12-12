@@ -12,7 +12,7 @@ A simple CRUD app using Go; GORM as ORM; JWT authorization
 ### note.go
 1. The `Note` model
 2. `Authorize()` to validate cookies
-3. Controllers: `GetNotes()` `CreateNotes()` `DeleteNotes()` `UpdateNotes()`
+3. Controllers: `GetNotes()` `CreateNote()` `DeleteNote()` `UpdateNote()`
 
 ### user.go
 1. The `User` model
