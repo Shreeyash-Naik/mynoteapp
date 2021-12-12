@@ -33,10 +33,12 @@ type Claims struct {
 func Register(w http.ResponseWriter, r *http.Request) {
 	Setup()
 
-	decoder := json.NewDecoder(r.Body)
-	
 	var user User
-	_ = decoder.Decode(&user)
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		// If the structure of the body is wrong, return an HTTP error
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	// user.Password = hash(user.Password)
 	db.Create(&user)

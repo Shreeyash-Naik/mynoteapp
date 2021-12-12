@@ -18,11 +18,6 @@ func Setup() {
 	} else {
 		fmt.Println("Successfully connected to database")
 	}
-	// sqlDB, err := db.DB()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer sqlDB.Close()
 }
 
 func InitialMigration() {
@@ -47,8 +42,6 @@ func HandleRequests() {
 	fmt.Println("Starting server at 8000")
 	log.Fatal(http.ListenAndServe(":8000", r))
 }
-
-
 
 func main() {
 	InitialMigration()

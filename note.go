@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	// "gorm.io/driver/postgres"
   	"gorm.io/gorm"
 	"github.com/gorilla/mux"
 	"net/http"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
+	"os"
 )
 
 var db *gorm.DB
@@ -20,29 +20,15 @@ type Note struct {
 	UserID uint `gorm:"primaryKey" json:"user_id"`
 }
 
-// func (n *Note) UnmarshalJSON(data []byte) error {
-//     var s [2]string
-//     if err := json.Unmarshal(data, &s); err != nil {
-//         return err
-//     }
-
-//     n.Title = s[0]
-//     n.Content = s[1]
-//     return nil
-// }
-
-// func Authorize() (*claims.Username)
-func GetNotes(w http.ResponseWriter, r *http.Request) {
-	Setup()
-
+func Authorize(w http.ResponseWriter, r *http.Request) (string) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
 			w.WriteHeader(http.StatusUnauthorized)
-			return
+			os.Exit(1)
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
+		os.Exit(1)
 	}
 
 	tokenStr := cookie.Value
@@ -57,17 +43,23 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			w.WriteHeader(http.StatusUnauthorized)
-			return
+			os.Exit(1)
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
+		os.Exit(1)
 	}
 
 	if !token.Valid {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 
-	username := claims.Username
+	return claims.Username
+}
+
+func GetNotes(w http.ResponseWriter, r *http.Request) {
+	Setup()
+
+	username := Authorize(w, r)
 
 	var user User
 	db.Where("username = ?", username).Find(&user)
@@ -82,41 +74,15 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 func CreateNote(w http.ResponseWriter, r *http.Request) { 
 	Setup()
 
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	username := Authorize(w, r)
 
-	tokenStr := cookie.Value
-
-	claims := &Claims{}
-
-	token, err := jwt.ParseWithClaims(tokenStr, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-	
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if !token.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-
-	username := claims.Username
 	var note Note
-	_ = json.NewDecoder(r.Body).Decode(&note)
+	err := json.NewDecoder(r.Body).Decode(&note)
+
+	if err != nil {
+		// If the structure of the body is wrong, return an HTTP error
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	var user User
 	db.Where("username = ?", username).Find(&user)
@@ -129,39 +95,9 @@ func CreateNote(w http.ResponseWriter, r *http.Request) {
 
 func DeleteNote(w http.ResponseWriter, r *http.Request) {
 	Setup()
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	tokenStr := cookie.Value
-
-	claims := &Claims{}
-
-	token, err := jwt.ParseWithClaims(tokenStr, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
 	
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	username := Authorize(w, r)
 
-	if !token.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-
-	username := claims.Username
 	var user User
 	db.Where("username = ?", username).Find(&user)
 
@@ -175,39 +111,8 @@ func DeleteNote(w http.ResponseWriter, r *http.Request) {
 
 func UpdateNote(w http.ResponseWriter, r *http.Request) {
 	Setup()
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	username := Authorize(w, r)
 
-	tokenStr := cookie.Value
-
-	claims := &Claims{}
-
-	token, err := jwt.ParseWithClaims(tokenStr, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-	
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if !token.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-
-	username := claims.Username
 	var user User
 	db.Where("username = ?", username).Find(&user)
 
