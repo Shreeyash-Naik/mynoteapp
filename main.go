@@ -37,12 +37,12 @@ func HandleRequests() {
 
 	r.HandleFunc("/register", Register).Methods("POST")
 	r.HandleFunc("/login", Login).Methods("POST")
-	r.HandleFunc("/user", GetAllUsers).Methods("GET")
+	r.HandleFunc("/users", GetAllUsers).Methods("GET")
 	
-	r.HandleFunc("/user/{uid}/notes", GetNotes).Methods("GET")
-	r.HandleFunc("/user/{uid}/notes", CreateNote).Methods("POST")
-	r.HandleFunc("/user/{uid}/notes/{nid}", DeleteNote).Methods("DELETE")
-	r.HandleFunc("/user/{uid}/notes/{nid}/{title}/{content}", UpdateNote).Methods("PUT")
+	r.HandleFunc("/notes", GetNotes).Methods("GET")
+	r.HandleFunc("/notes", CreateNote).Methods("POST")
+	r.HandleFunc("/notes/{nid}", DeleteNote).Methods("DELETE")
+	r.HandleFunc("/notes/{nid}/{title}/{content}", UpdateNote).Methods("PUT")
 
 	fmt.Println("Starting server at 8000")
 	log.Fatal(http.ListenAndServe(":8000", r))
